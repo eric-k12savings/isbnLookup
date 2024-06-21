@@ -1,63 +1,61 @@
-from isbnlib import meta, isbn_from_words, info, get_isbnlike
+import tkinter as tk
+from tkinter import simpledialog
+from isbnlib import meta, isbn_from_words, info, get_isbnlike, config, registry
 from isbnlib.registry import bibformatters
-import pandas as p
 
-#.replace('{', '').replace('}', '').replace(',', '')
-print("Enter ISBN's")
-isbnInput = input()
-isbnList = get_isbnlike(isbnInput, level = 'normal')
-linkList = []
-SERVICE = "openl"
-link = "https://www.amazon.com/s?k=9780030368165&crid=3JNVDULVN4JTX&sprefix=9780071600637%2Caps%2C65&ref=nb_sb_noss"
-bibtex = bibformatters["bibtex"]
-counter = 1
 
-for isbn in isbnList:
-    newLink = link.replace(isbn_from_words(link), isbn)
-    linkList.append(newLink)
-    try:
-        print(bibtex(meta(isbn, SERVICE)).replace('{', '').replace('}', '').replace(',', ''))
-    except Exception:
-        print("Bok no foun, be ded")
-    print(info(isbn))
-    print("Price: ")
-    print('--------------------------------------------------------------------------------')
 
-for vi in linkList:
-    print(f'{counter}: {vi}')
-    counter += 1
+def isbnlookup(isbnInput):
+    isbnList = get_isbnlike(isbnInput, level='normal')
+    linkList = []
+    SERVICE = "openl"
+    SERVICE2 = 'goob'
+    SERVICE3 = 'wiki'
+    services = [SERVICE, SERVICE2, SERVICE3]
+    link = "https://www.amazon.com/s?k=9780030368165&crid=3JNVDULVN4JTX&sprefix=9780071600637%2Caps%2C65&ref=nb_sb_noss"
+    bibtex = bibformatters["bibtex"]
+    counter = 1
 
-linkList.clear()
+    for isbn in isbnList:
+        newLink = link.replace(isbn_from_words(link), isbn)
+        linkList.append(newLink)
+        for index, i in enumerate(services):  
+            try:
+                print(bibtex(meta(isbn, service = i)).replace('{', '').replace('}', '').replace(',', ''))
+                print(f'{counter}):')
+                print(f'Service Used: {i}')
+            except Exception as e:
+                if index == len(services)-1:
+                    print(f'Book was not found: {e}')
+                continue
+            else:
+                print(info(isbn))
+                print("Price: ")
+                print('--------------------------------------------------------------------------------')
+                break
+        
 
-    
-    
-# from isbnlib import meta, isbn_from_words, info, get_isbnlike
-# from isbnlib.registry import bibformatters
-# import pandas as p
+    for vi in linkList:
+        counter = 1
+        print(f'{counter}: {vi}')
+        counter += 1
 
-# #.replace('{', '').replace('}', '').replace(',', '')
-# print("Enter ISBN's")
-# isbnInput = input()
-# isbnList = get_isbnlike(isbnInput, level = 'normal')
-# records = []
-# rows= []
-# SERVICE = "openl"
-# link = "https://www.amazon.com/s?k=9780030368165&crid=3JNVDULVN4JTX&sprefix=9780071600637%2Caps%2C65&ref=nb_sb_noss"
-# bibtex = bibformatters["bibtex"]
 
-# for isbn in isbnList:
-#     row = {}
-#     for node in isbnList:
-#         row[node.tag] = node.text
-    
-#     rows.append(row)
-#         # newLink = link.replace(isbn_from_words(link), isbn)
-#         # print(newLink)
-#         # print(bibtex(meta(isbn, SERVICE)).replace('{', '').replace('}', '').replace(',', ''))
-#         # print(info(isbn))
-#         # print('--------------------------------------------------------')
 
-# df = p.DataFrame(rows)
-# df.to_excel('bookList.xlsx')
-    
-    
+def main(isbnInput):
+    isbnlookup(isbnInput)
+
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.withdraw()  # Hide the main window
+
+    isbnInput = simpledialog.askstring("Input", "Copy and paste email, or just ISBN's into window:")
+
+    if isbnInput:
+        main(isbnInput)
+    else:
+        print("No ISBNs provided.")
+
+    input("Press Enter to exit...")  # Keeps the terminal open
